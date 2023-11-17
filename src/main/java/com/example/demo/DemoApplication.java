@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,11 +17,40 @@ public class DemoApplication {
 
 class Solution {
 	
+//	SESSION 1: dynamic programming, only move right / down in a 2-D array
+	public int uniquePaths(int m, int n) {
+		int[][] dp = new int[m][n];
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				if (i == 0 || j == 0) {
+					dp[i][j] = 1;
+				} else {
+					dp[i][j] = dp[i-1][j] + dp[i][j-1];
+				}
+			}
+		}
+		
+		return dp[m - 1][n-1];
+	}
+	
+	
 	
 	
 //	SESSION 2: find all duplicates in array, positive integer array
 	public List<Integer> findDuplicates(int[] nums) {
+		List<Integer> resultIntegers = new ArrayList<>();
 		
+		for (int i = 0; i < nums.length; i++) {
+			int index = Math.abs(nums[i]) - 1;
+			
+			if (nums[index] < 0) {
+				resultIntegers.add(index + 1);
+			}
+			
+			nums[index] = -nums[index];
+		}
+		
+		return resultIntegers;
 	}
 	
 	
