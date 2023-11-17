@@ -248,4 +248,79 @@ class Solution {
 		}
 		return -1;
 	}
+	
+	
+	
+//	SESSION 8: valid anagram - same characters in different order
+//	ASCII table: a -> 97, b -> 98
+	public boolean isValidAnagram(String s, String t) {
+		int[] letters = new int[26];
+		char[] arr1 = s.toCharArray();
+		char[] arr2 = t.toCharArray();
+		
+		for (int i = 0; i < arr1.length; i++) {
+			letters[arr1[i] - 'a']++;
+		}
+		for (int i = 0; i < arr2.length; i++) {
+			letters[arr2[i] - 'a']--;
+		}
+		
+		for (int i = 0; i < letters.length; i++) {
+			if (letters[i] != 0) return false;
+		}
+		
+		return true;
+	}
+	
+	
+//	SESSION 9: number of islands
+	public int numberOfIsland(int[][] grid) {
+		
+		if (grid == null || grid.length == 0) return 0;
+		
+		int islandCount = 0;
+		int m = grid.length;
+		int n = grid[0].length;
+		
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				if (grid[i][j] == 1) {
+					traverseIsland(
+							grid, i, j, m, n
+							);
+					++islandCount;
+				}
+			}
+		}		
+		
+		return islandCount;
+	}
+	
+	private void traverseIsland(
+			int[][] grid, int i, int j, int m, int n
+			) {
+		// exit condition
+		if (i < 0 || j < 0 || i >= m || j >= n || grid[i][j] == 0) return;
+		
+		grid[i][j] = 0;
+		// recursive
+		// left
+		traverseIsland(
+				grid, i, j-1, m, n
+				);
+		// up
+		traverseIsland(
+				grid, i-1, j, m, n
+				);
+		// right
+		traverseIsland(
+				grid, i, j+1, m, n
+				);
+		// down
+		traverseIsland(
+				grid, i + 1, j, m, n
+				);
+	}
+	
+	
 }
