@@ -3,8 +3,10 @@ package com.example.demo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 public class DemoApplication {
@@ -323,4 +325,147 @@ class Solution {
 	}
 	
 	
+//	SESSION 10: sum of two integers to target, array is sorted
+	public int[] twoSum(int[] numbers, int target) {
+		int left = 0;
+		int right = numbers.length - 1;
+		
+		while(left < right) {
+			int sum = numbers[left] + numbers[right];
+			
+			if (sum == target) return new int[] {
+					left, right
+			};
+			else if (sum > target) --right;
+			else ++left;
+		}
+		
+		return null;
+	}
+	
+	
+//	SESSION 11: clone graph
+	public Node cloneGraph(Node node) {
+		if (node == null) return null;
+		
+		Map<Integer, Node> map = new HashMap<>();
+		
+		return cloneGraph(node, map);
+	}
+	
+	//	DFS
+	private Node cloneGraph(Node node, Map<Integer, Node> map) {
+		
+		if (map.containsKey(node.val)) return map.get(node.val);
+		
+		Node copyNode = new Node(node.val);
+		map.put(node.val, copyNode);
+		
+		for (Node neighborNode : node.neighbors) {
+			copyNode.neighbors.add(
+					cloneGraph(neighborNode, map)
+					);
+		}
+		
+		return copyNode;
+	}
+	
+
+//	SESSION 12: Sum of left leaves: all leaves in a given binary tree
+	public int sumOfLeftLeaves(TreeNode root) {
+		if(root == null) return 0;
+		
+		int sum = 0;
+		if (root.leftTreeNode != null) {
+			if (isLeaf(root.leftTreeNode)) sum += root.leftTreeNode.val;
+			else {
+				sum += sumOfLeftLeaves(root.leftTreeNode);
+			}
+		}
+		
+		sum += sumOfLeftLeaves(root.rightTreeNode);
+		
+		return sum;
+	}
+	
+	private boolean isLeaf (TreeNode node) {
+		return node.leftTreeNode == null && node.rightTreeNode == null;
+	}
+	
+	
+//	QUEUE
+	public int sumOfLeftLeavesV2(TreeNode root) {
+		if(root == null) return 0;
+		
+		int sum = 0;
+		
+		Queue<TreeNode> queue = new LinkedList<>();
+		queue.add(root);
+		
+		while (!queue.isEmpty()) {
+			TreeNode node = queue.poll();
+			
+			if(node.leftTreeNode != null) {
+				if (isLeaf(node)) {
+					sum += node.leftTreeNode.val;
+				} else {
+					queue.add(node.leftTreeNode);
+				}
+			}
+			
+			if (node.rightTreeNode != null)
+				queue.add(node.rightTreeNode);
+		}
+		
+		return sum;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
+
+
+// binary tree node
+class TreeNode {
+	int val;
+	TreeNode leftTreeNode;
+	TreeNode rightTreeNode;
+	
+	TreeNode(int x) {
+		val = x;
+	}
+}
+
+
+class Node {
+	public Node() {
+		val = 0;
+		neighbors = new ArrayList<>();
+	}
+	
+	public Node(int _val) {
+		val = _val;
+		neighbors = new ArrayList<>();
+	}
+	
+	public Node(int _val, ArrayList<Node> _neighbors) {
+		val = _val;
+		neighbors = _neighbors;
+	}
+	
+	public int val;
+	public List<Node> neighbors;
 }
