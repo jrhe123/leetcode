@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 
@@ -1130,6 +1132,371 @@ class Solution {
 //	4	9	40	90	400	 900
 	
 //	range: 1 ~ 3999
+//	public String intToRoman(int num) {
+//		String resultString = "";
+//		
+//		for (Numeral numeral : numerals) {
+//			int numberOfSymbols = num / numeral.value;
+//			if (numberOfSymbols != 0) {
+//				resultString += numeral.symbolString
+//									.repeat(numberOfSymbols);
+//			}
+//			num %= numeral.value;
+//		}
+//		
+//		return resultString;
+//	}
+	
+	class Numeral {
+		public String symbolString;
+		public int value;
+		public Numeral(String _symbolString,  int _value) {
+			this.symbolString = _symbolString;
+			this.value = _value;
+		}
+	}
+	
+	private Numeral[] numerals = {
+			new Numeral("M", 1000),
+			new Numeral("CM", 900),
+			new Numeral("D", 500),
+			new Numeral("CD", 400),
+			new Numeral("C", 100),
+			new Numeral("XC", 90),
+			new Numeral("L", 50),
+			new Numeral("XL", 40),
+			new Numeral("X", 10),
+			new Numeral("IX", 9),
+			new Numeral("V", 5),
+			new Numeral("IV", 4),
+			new Numeral("I", 1),
+	};
+	
+	
+	
+//	SESSION 31:	Number of Islands - Breadth First Search
+//	BFS
+	public int numIsIsland(char[][] grid) {
+		if (grid == null || grid[0].length == 0) return 0;
+		
+		int island = 0;
+		int rows = grid.length;
+		int cols = grid[0].length;
+		
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (grid[i][j] == '1') {
+					++island;
+					fillWithWater(grid, rows, cols, i, j);
+				}
+			}
+		}
+		
+		return island;
+	}
+	
+	private final int[][] DIRECTION = {
+		{1,0},{-1,0},{0,1},{0,-1}
+	};
+	
+	private void fillWithWater(char[][] grid, int rows, int cols, int i, int j) {
+		
+		Queue<Integer> queue = new LinkedList<>();
+		
+		// 2D -> 1D = R * #cols + C (optional)
+		// 1D -> 2D 
+		// R = index / #cols
+		// C = index % #cols
+		queue.add(i * cols + j);
+		
+		grid[i][j] = '0';
+		
+		while (!queue.isEmpty()) {
+			int index = queue.poll();
+			int row = index / cols;
+			int col = index % cols;
+			
+			for (int[] direction: DIRECTION) {
+				int x = direction[0] + row;
+				int y = direction[1] + col;
+				
+				if (x > -1 && x < rows && y > -1 && y < cols &&
+						grid[x][y] == '1') {
+					grid[x][y] = '0';
+					queue.add(x * cols + y);
+				}
+			}
+		}
+	}
+	
+	
+//	SESSION 32:	Boyer Moore Majority Vote Algorithm
+//	Majority elements > 50%
+//	2,1,2,2,2,1,1,3,2
+//	
+//	candidate
+//	count
+	public int majorityElement(int[] nums) {
+		int candidate = 0;
+		int count = 0;
+		
+		for (int elem : nums) {
+			if (count == 0) candidate = elem;
+			if (elem == candidate) {
+				++count;
+			} else {
+				--count;
+			}
+		}
+		return candidate;
+	}
+	
+	
+//	SESSION 33:	Add Two Numbers - Linked List
+	public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+		ListNode resultListNode = new ListNode(-1);
+		ListNode currNode = resultListNode;
+		
+		int carry = 0;
+		while (l1 != null || l2 != null) {
+			int sum = 0;
+			if (l1 == null) {
+				sum = l2.val + carry;
+				l2 = l2.nextListNode;
+			} else if (l2 == null) {
+				sum = l1.val + carry;
+				l1 = l1.nextListNode;
+			} else {
+				sum = l1.val + l2.val + carry;
+				l1 = l1.nextListNode;
+				l2 = l2.nextListNode;
+			}
+			
+			int num = sum % 10;
+			carry = sum / 10;
+			
+			currNode.nextListNode = new ListNode(num);
+			currNode = currNode.nextListNode;
+		}
+		
+		if (carry == 1) {
+			currNode.nextListNode = new ListNode(1);
+		}
+		
+		return resultListNode.nextListNode;
+	}
+	
+	
+//	SESSION 34:	Merge K Sorted Lists
+//	[[1,4,5], [1,3,4], [2,6]
+//	
+//	start = 0 
+//	end = 2
+//	mid = (0+2)/2 = 1
+//	
+//	split the element into single list, using mid
+//	[1,4,5]
+//	[1,3,4]
+//	[2,6]
+//	
+//	Merge sort, merge back now
+//	[1,1,3,4,4,5] & [2,6]
+//	[1,1,2,3,4,4,5,6]
+	public ListNode mergeKList(ListNode[] lists) {
+		if(lists == null || lists.length == 0) return null;
+	
+		return mergeKLists(lists, 0, lists.length - 1);
+	}
+	
+	private ListNode mergeKLists(ListNode[] lists, int start, int end) {
+		if (start == end) return lists[start];
+		
+		int mid = (start + end ) / 2;
+		
+		ListNode leftListNode = mergeKLists(lists, start, mid);
+		ListNode rightListNode = mergeKLists(lists, mid + 1, end);
+		
+		return mergeV2(leftListNode, rightListNode);
+	}
+	
+	
+	private ListNode mergeV2(ListNode l1, ListNode l2) {
+		ListNode resuListNode = new ListNode(-1);
+		ListNode curListNode = resuListNode;
+		
+		while (l1 != null || l2 != null) {
+			if (l1 == null) {
+				curListNode.nextListNode = l2;
+				l2 = l2.nextListNode;
+			} else if (l2 == null) {
+				curListNode.nextListNode = l1;
+				l1 = l1.nextListNode;
+			} else if (l1.val < l2.val) {
+				curListNode.nextListNode = l1;
+				l1 = l1.nextListNode;
+			} else { // l1.val > l2.val
+				curListNode.nextListNode = l2;
+				l2 = l2.nextListNode;
+			}
+			
+			curListNode = curListNode.nextListNode;
+		}
+		// skip the dummy head
+		return resuListNode.nextListNode;		
+	}
+	
+	
+//	SESSION 35:	Longest Increasing Path in a Matrix
+//	DFS + Memoization
+//	    0 	1 	2
+//	   -----------
+//	0 | 3	4	5
+//	1 |	3	2	6
+//	
+//	longestPath: 2->4->5->6 OR 3->4->5->6
+//	check elem: if it's greater than itself
+//	
+//	cache memorization
+//    0 	1 	2
+//   -----------
+//0 | 	4	3	2
+//1 |	1	4	1
+
+	public int logestIncreasingPath(int[][] matrix) {
+		if(matrix == null || matrix.length == 0)
+			return 0;
+		
+		int n = matrix.length;
+		int m = matrix[0].length;
+		int longestPath = 0;
+		
+		int[][] cache = new int[n][m];
+		for(int i = 0; i < n; i++) {
+			for(int j = 0; j < m; j++) {
+				int longest = longestIncreasingPath(matrix, cache, n, m, i, j);
+				longestPath = Math.max(longestPath, longest);
+			}
+		}
+		return longestPath;
+	}
+	
+	private final int[][] DIRECTION_V2 = {
+			{1,0},{-1,0},{0,1},{0,-1}
+		};
+	
+	private int longestIncreasingPath(
+			int[][] matrix, int[][] cache, int n, int m, int i, int j) {
+		if (cache[i][j] > 0) return cache[i][j];
+		
+		int max = 0;
+		
+		for (int[] direction : DIRECTION_V2) {
+			int x = direction[0] + i;
+			int y = direction[1] + j;
+			
+			if (x > -1 && y > -1 && x < n && y < m &&
+					matrix[x][y] > matrix[i][j]) {
+				
+				int longest = longestIncreasingPath(
+						matrix, cache, n, m, x, y
+						);
+				max = Math.max(max, longest);
+			}
+		}
+		
+		cache[i][j] = max + 1;
+		return cache[i][j];
+	}
+	
+	
+//	SESSION 36:	Insert Delete GetRandom
+//	O(1)
+//	HashMap
+//	ArrayList
+//	insert 1, insert 2, getRandom, remove 1, remove 2
+//	RadomizedSet
+	
+	
+//	SESSION 37:	Binary Tree Maximum Path Sum
+//	Post-order traversal
+//	bottom to top
+	public int maxPathSum(TreeNode root) {
+		postOrder(root);
+		return max;
+	}
+	
+	private int max = Integer.MIN_VALUE;
+	
+	// convert negative number to 0
+	private int postOrder (TreeNode root) {
+		if (root == null) return 0;
+		
+		int left = Math.max(0, postOrder(root.leftTreeNode));
+		int right = Math.max(0, postOrder(root.rightTreeNode));
+		
+		max = Math.max(max, left + right + root.val);
+		
+		return Math.max(left, right) + root.val;
+	}
+	
+	
+//	SESSION 38:	Minimum Window Substring - Sliding Window
+//	(see SESSION 27)
+	public String minWindow(String s, String t) {
+		
+		if(s == null || t == null || s.isEmpty() || t.isEmpty()) return "";
+		
+		Map<Character, Integer> map = new HashMap<>();
+		for (int i = 0; i < t.length(); i++) {
+			char c = t.charAt(i);
+			map.put(c, map.getOrDefault(c, 0) + 1);
+		}
+		
+		int i = 0;
+		int j = 0;
+		int count = map.size();
+		int left = 0;
+		int right = s.length() - 1;
+		int min = s.length();
+		
+		boolean found = false;
+		while (j < s.length()) {
+			char endChar = s.charAt(j);
+			j++;
+			
+			if (map.containsKey(endChar)) {
+				map.put(endChar, map.get(endChar) - 1);
+				if(map.get(endChar) == 0) {
+					count--;
+				}
+			}
+			
+			if (count > 0) continue;
+			
+			// remove the unnecessary prefix
+			while (count == 0) {
+				char startChar = s.charAt(i);
+				i++;
+				
+				if (map.containsKey(startChar)) {
+					map.put(startChar, map.get(startChar) + 1);
+					if(map.get(startChar) > 0) {
+						count++;
+					}
+				}				
+			}
+			
+			if(j - i < min)  {
+				left = i;
+				right = j;
+				min = j - i;
+				
+				found = true;
+			}
+		}
+		
+		return !found ? "" : s.substring(left - 1, right);
+	}
 	
 	
 	
@@ -1138,6 +1505,71 @@ class Solution {
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
+
+// https://www.youtube.com/watch?v=uLjO2LUlLN4&list=PLtQWXpf5JNGJagakc_kBtOH5-gd8btjEW&index=35
+
+
+class RadomizedSet {
+	
+	private Map<Integer, Integer> map;
+	private List<Integer> list;
+	private Random random;
+	
+	public RadomizedSet() {
+		map = new HashMap<>();
+		list = new ArrayList<>();
+		random = new Random();
+	}
+	
+	public boolean insert (int val) {
+		if (map.containsKey(val)) return false;
+		
+		map.put(val, list.size());
+		list.add(val);
+		
+		return true;
+	}
+	
+	// always remvoe the last elem
+	public boolean remove(int val) {
+		if(!map.containsKey(val)) return false;
+		
+		int index = map.get(val);
+		int lastElem = list.get(list.size() - 1);
+		
+		list.set(index, lastElem);
+		map.put(lastElem, index);
+		map.remove(val);
+		list.remove(list.size() - 1);
+		
+		return true;
+	}
+	
+	public int getRandom() {
+		int index = random.nextInt(
+						list.size()
+					);
+		return list.get(index);
+	}
 	
 }
 
