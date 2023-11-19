@@ -1499,25 +1499,357 @@ class Solution {
 	}
 	
 	
+//	SESSION 39:	Maximum sum of Subarray
+//	Dynamic Programming
+//	Kadane's Algorithm 
+//	curr[i] = max(curr[i], curr[i] + curr[i-1])
+//	
+//	[-2,1,-3,4,-1,2,1,-5,4]
+//	max = -2
+//	
+//	step1: max(curr[i], curr[i] + curr[i-1])
+//	step2: max(max, curr[i) -> update max
+//	step3: update with new max
+//	
+//	[-2,1,1,4,3,5,6,1,5]
+//  max 6
+//	
+//	ans: 4,-1,2,1
+	public int maxSubArray(int[] nums) {
+		int max = nums[0];
+		
+		for (int i = 1; i < nums.length; i++) {
+			nums[i] = Math.max(nums[i], nums[i] + nums[i-1]);
+			max = Math.max(max, nums[i]);
+		}
+		return max;
+	}
 	
 	
 	
+//	SESSION 40:	Time Based Key Value Store
+//	sorted -> binary search
+
+	
+	
+//	SESSION 41: Decode String
+//	Stack
+//	
+//	2[a2[bc2[d]]]
+	public String decodeString(String s) {
+		Stack<Integer> countStack = new Stack<>();
+		Stack<String> wordStack = new Stack<>();
+		
+		int number = 0;
+		StringBuilder wordBuilder = new StringBuilder();
+		
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (Character.isDigit(c)) {
+				number = number * 10 + (c - '0');
+			} else if (Character.isLetter(c)) {
+				wordBuilder.append(c);
+			} else if (c == '[') {
+				countStack.add(number);
+				wordStack.add(wordBuilder.toString());
+				// reset
+				number = 0;
+				wordBuilder = new StringBuilder();
+			} else { // c == ']'
+				int count = countStack.pop();
+				StringBuilder duplicatedWordBuilder = new StringBuilder(
+						wordStack.pop());
+				for (int j = 1; j <= count; j++) {
+					duplicatedWordBuilder.append(wordBuilder);
+				}
+				wordBuilder = duplicatedWordBuilder;
+			}
+		}
+		
+		return wordBuilder.toString();
+	}
 	
 	
 	
+//	SESSION 42: Flip Equivalent Binary Trees
+//	Flip the sub-nodes => to be equivalent tree
+//	4 CHECKS
+//	1. left is equal left'
+//	2. right is equal right'
+//	3. swap left is equal left'
+//	4. swap right is equal right'
+//	concatenate these 4 checks together
+	public boolean flipEquiv(TreeNode root1, TreeNode root2) {
+		
+		if (root1 == null || root2 == null) return true;
+		if (root1 == null || root2 == null || root1.val != root2.val) {
+			return false;
+		}
+		
+		boolean firstCheck = flipEquiv(root1.leftTreeNode, root2.leftTreeNode)
+				&& flipEquiv(root1.rightTreeNode, root2.rightTreeNode);
+		boolean secondCheck = flipEquiv(root1.leftTreeNode, root2.rightTreeNode)
+				&& flipEquiv(root1.rightTreeNode, root2.leftTreeNode);
+		
+		return firstCheck || secondCheck;
+	}
 	
 	
+//	SESSION 43: Surrounded Regions
+//	BFS & DFS
+//	oxxxx
+//	xooxx
+//	xxxox
+//	xooxx
+//	xxoxx
+//	
+//	if group of o, touching the border, not flip
+//	
+	public void solve(char[][] board) {
+		int m = board.length;
+		int n = board[0].length;
+		
+		for (int i = 0; i < m; i++) {
+			// left board
+			markBoard(
+					board, m, n, i, 0
+					);
+			// right board
+			markBoard(
+					board, m, n, i, n-1
+					);
+		}
+		
+		for (int i = 0; i < n; i++) {
+			// top board
+			markBoard(
+					board, m, n, 0, i
+					);
+			// bottom board
+			markBoard(
+					board, m, n, m - 1, i
+					);
+		}
+		
+		flipBoard(board, m, n);
+	}
+	
+	private final int[][] DIRECTION_V3 = {
+			{1,0},{-1,0},{0,1},{0,-1}
+		};
+	
+	// DFS
+	private void markBoard(char[][] board, int m, int n, int i, int j) {
+		if (i < 0 || j < 0 || i >= m || j >= n || board[i][j] != '0') return;
+		
+		board[i][j] = 'M';
+		for (int[] direction: DIRECTION_V3) {
+			int x = direction[0] + i;
+			int y = direction[1] + j;
+			
+			markBoard(board, m, n, x, y);
+		}
+	}
+	
+	// BFS
+	private void markBoardV2(char[][] board, int m, int n, int i, int j) {
+		if (board[i][j] != '0') return;
+		
+		board[i][j] = 'M';
+		Queue<Integer> queue = new LinkedList<>();
+		// 2D -> 1D
+		queue.add(i * n + j);
+		
+		while (!queue.isEmpty()) {
+			int position = queue.poll();
+			int row = position / n;
+			int col = position % n;
+			
+			for (int[] direction : DIRECTION_V3) {
+				int x = direction[0] + row;
+				int y = direction[1] + col;
+				
+				if (x > -1 && y > -1 && x < m && y < n && board[x][y] == '0') {
+					queue.add(x * n + y);
+					board[x][y] = 'M';
+				}
+			}
+		}
+	}
+
+	private void flipBoard(char[][] board, int m, int n) {
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				if (board[i][j] == 'M') {
+					board[i][j] = 'O';
+				} else if (board[i][j] == 'O') {
+					board[i][j] = 'X';
+				}
+			}
+		}
+	}
 	
 	
+//	SESSION 44: Rotting Oranges
+//	Directional Arrays & BFS
+//	
+//	2,1,1
+//	1,1,0
+//	0,1,1
+//	
+//	=> rotten organes
+//	
+//	2,2,2
+//	2,2,0
+//	0,2,2
+//	
+//	Queue
+	public int orangeRoting(int[][] grid) {
+		// step 1: count how many fresh oranges
+		int m = grid.length;
+		int n = grid[0].length;
+		int freshOranges = 0;
+		
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				if (grid[i][j] == 1) {
+					++freshOranges;
+				}
+			}
+		}
+		
+		// BFS: queue
+		Queue<Integer> queue = new LinkedList<>();
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				if (grid[i][j] == 2) {
+					// 2D -> 1D
+					queue.add(i * n + j);
+				}
+			}
+		}
+		
+		int minutes = 0;
+		while (!queue.isEmpty() && freshOranges > 0) {
+			int size = queue.size();
+			for (int i = 0; i < size; i++) {
+				int num = queue.poll();
+				int row = num / n;
+				int col = num % n;
+				
+				for (int[] direction: DIRECTION_V4) {
+					int x = direction[0] + row;
+					int y = direction[1] + col;
+					
+					if (x > -1 && y > -1 && x < m && y < n &&
+							grid[x][y] == 1) {
+						queue.add(x * n + y);
+						//
+						--freshOranges;
+						grid[x][y] = 2;
+					}
+					
+				}
+			}
+			
+			++minutes;
+		}
+		return freshOranges == 0 ? minutes : -1;
+	}
+	
+	private final int[][] DIRECTION_V4 = {
+			{1,0},{-1,0},{0,1},{0,-1}
+		};
 	
 	
+//	SESSION 44: Compare Version Numbers
+//	v1.000.000
+//	v1
+	public int compareVersion(String version1, String version2) {
+		String[] v1Section = version1.split("\\.");
+		String[] v2Section = version2.split("\\.");
+		
+		int m = v1Section.length;
+		int n = v2Section.length;
+		int i = 0;
+		int j = 0;
+		
+		while (i < m || j < n) {
+			int v1 = i < m ? Integer.parseInt(v1Section[i]) : 0;
+			int v2 = j < n ? Integer.parseInt(v1Section[j]) : 0;
+			
+			if (v1 != v2) return v1 < v2 ? -1 : 1;
+			if (i < m) ++i;
+			if (j < n) ++j;
+		}
+		
+		return 0;
+	}
 	
 	
+//	SESSION 45: Minimum remove to make valid parentheses
+	public String minRemoveToMakeValid(String s) {
+		char[] sArr = s.toCharArray();
+		Set<Integer> indicesToRemove = new HashSet<>();
+		Stack<Integer> stack = new Stack<>();
+		
+		for (int i = 0; i < sArr.length; i++) {
+			char c = sArr[i];
+			if (c == '(') {
+				stack.add(i);
+			} else if (c == ')') {
+				if (stack.isEmpty())
+					indicesToRemove.add(i);
+				else
+					stack.pop();
+			}
+		}
+		
+		while(!stack.isEmpty()) {
+			indicesToRemove.add(stack.pop());
+		}
+		
+		StringBuilder resultBuilder = new StringBuilder();
+		for (int i = 0; i < sArr.length; i++) {
+			if (!indicesToRemove.contains(i)) {
+				resultBuilder.append(sArr[i]);
+			}
+		}
+		
+		return resultBuilder.toString();
+	}
 	
 	
-	
-	
-	
+//	SESSION 46: Rotate List
+//	linked list
+//	k = 2
+//	1,2,3,4,5
+//	
+//	=> 4,5,1,2,3
+	public ListNode rotateRight(ListNode head, int k) {
+		if (head == null || head.nextListNode == null) return head;
+		
+		int length = 1;
+		ListNode oldTail = head;
+		
+		while (oldTail.nextListNode != null) {
+			++length;
+			oldTail = oldTail.nextListNode;
+		}
+		
+		oldTail.nextListNode = head;
+		int pivot = length - (k % length);
+		ListNode newTaiListNode = head;
+		
+		for (int i = 1; i < pivot; i++) {
+			newTaiListNode = newTaiListNode.nextListNode;
+		}
+		
+		ListNode newHead = newTaiListNode.nextListNode;
+		newTaiListNode.nextListNode = null;
+		
+		return newHead;
+	}
 	
 	
 	
@@ -1526,6 +1858,59 @@ class Solution {
 }
 
 // https://www.youtube.com/watch?v=uLjO2LUlLN4&list=PLtQWXpf5JNGJagakc_kBtOH5-gd8btjEW&index=35
+
+class TimeMap {
+	
+	private Map<String, List<Data>> map;
+	
+	public TimeMap() {
+		map = new HashMap<>();
+	}
+	
+	public void set(String key, String value, int timestamp) {
+		if (!map.containsKey(key)) {
+			map.put(key, new ArrayList<>());
+		}
+		
+		map.get(key).add(new Data(value, timestamp));
+	}
+	
+	public String get(String key, int timestamp) {
+		if (!map.containsKey(key)) return "";
+		
+		List<Data> data = map.get(key);
+		return findClosetValue(data, timestamp);
+	}
+	
+	// binary search
+	private String findClosetValue(List<Data> data, int timestamp) {
+		int left = 0;
+		int right = data.size() - 1;
+		
+		while (left < right) {
+			int mid = (left + right + 1) / 2;
+			
+			if (data.get(mid).timestamp <= timestamp) left = mid;
+			else right = mid - 1;
+		}
+		
+		Data closestData = data.get(left);
+		return closestData.timestamp > timestamp ? "" : closestData.value;
+	}
+	
+	
+	class Data {
+		String value;
+		int timestamp;
+		
+		public Data (String value, int timestamp) {
+			this.value = value;
+			this.timestamp = timestamp;
+		}
+	}
+	
+}
+
 
 
 class RadomizedSet {
